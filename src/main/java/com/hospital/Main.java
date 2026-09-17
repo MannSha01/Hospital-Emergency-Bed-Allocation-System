@@ -9,24 +9,23 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== Hospital Emergency Triage & Bed Allocation System ===");
 
-        // Initialize H2 Database tables and seed initial beds
+        
         DatabaseConfig.initializeDatabase();
 
         TriageService triageService = new TriageService();
 
-        // Register patients
+        
         triageService.registerPatient(new Patient("Aarav Sharma", 1));  // High urgency -> ICU
         triageService.registerPatient(new Patient("Rohan Verma", 4));   // Low urgency -> General
         triageService.registerPatient(new Patient("Ananya Iyer", 1));   // High urgency -> ICU
         triageService.registerPatient(new Patient("Vikram Singh", 2));  // High urgency -> ICU
         triageService.registerPatient(new Patient("Deepa Rao", 3));     // Medium urgency -> General
 
-        // Display dashboard after registration
         triageService.printDashboard();
 
         System.out.println("\n--- Processing Bed Allocations ---");
 
-        // Process priority queue until empty
+       
         while (triageService.getQueueSize() > 0) {
             try {
                 triageService.allocateBedNextPatient();
@@ -35,7 +34,7 @@ public class Main {
             }
         }
 
-        // Display dashboard after allocations
+        
         triageService.printDashboard();
 
         System.out.println("=== Triage processing sequence complete ===");
