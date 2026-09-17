@@ -138,6 +138,14 @@ CREATE TABLE IF NOT EXISTS patients (
 [TRIAGE] Registered: Vikram Singh -> Condition: [SEVERE (ICU Preferred)]
 [TRIAGE] Registered: Deepa Rao -> Condition: [MODERATE]
 
++-------------------------------------------------+
+|      EMERGENCY ROOM OCCUPANCY DASHBOARD         |
++-------------------------------------------------+
+| ICU Beds     : 0/2 Occupied [  0% Capacity]     |
+| General Beds : 0/2 Occupied [  0% Capacity]     |
+| Waiting Queue: 5 Patient(s) Waiting             |
++-------------------------------------------------+
+
 --- Processing Bed Allocations ---
 [ALLOCATION] ICU Bed #101 assigned to Aarav Sharma (CRITICAL (ICU Required))
 [ALLOCATION] ICU Bed #102 assigned to Ananya Iyer (CRITICAL (ICU Required))
@@ -145,5 +153,12 @@ CREATE TABLE IF NOT EXISTS patients (
 [ALLOCATION] GENERAL Bed #202 assigned to Deepa Rao (MODERATE)
 [EXPERT LOG] No beds currently available for patient: Rohan Verma [LOW URGENCY]
 
++-------------------------------------------------+
+|      EMERGENCY ROOM OCCUPANCY DASHBOARD         |
++-------------------------------------------------+
+| ICU Beds     : 2/2 Occupied [100% Capacity]     |
+| General Beds : 2/2 Occupied [100% Capacity]     |
+| Waiting Queue: 0 Patient(s) Waiting             |
++-------------------------------------------------+
 === Triage processing sequence complete ===
 ```
