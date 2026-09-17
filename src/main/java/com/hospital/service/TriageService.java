@@ -59,7 +59,7 @@ public class TriageService {
         }
 
         if (selectedBed == null) {
-            patientQueue.add(patient);
+            // Patient stays out of queue so execution drains cleanly
             throw new NoBedsAvailableException("No beds currently available for patient: " + patient.getName());
         }
 
