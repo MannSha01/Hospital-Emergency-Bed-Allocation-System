@@ -5,7 +5,6 @@
 - **University: VIT Bhopal University**
 
 
-
 # Hospital Emergency Triage & Bed Allocation System
 
 A multi-threaded, command-line Java application designed for real-time emergency room patient triage and dynamic bed allocation. The system prioritizes incoming patients by medical severity using a priority queue, manages bed occupancy safely across concurrent intake threads, logs all operations to a local audit file, and persists data using an embedded H2 database via JDBC.
@@ -17,10 +16,10 @@ A multi-threaded, command-line Java application designed for real-time emergency
 * **Module 1 & 2: Java Platform & Object-Oriented Design**
   * Implements domain classes (`Patient`, `Bed`) using encapsulation, inheritance (`ICUBed` and `GeneralBed` extending abstract class `Bed`), and custom sorting logic via the `Comparable` interface.
 * **Module 3: Exception Handling & File I/O**
-  * Throws custom domain exceptions (`NoBedsAvailableException`) when bed capacity is reached.
+  * Throws custom domain exceptions (`NoBedsAvailableException`) when bed capacity is reached without freezing or crashing the runtime loop.
   * Uses `BufferedWriter` and `FileWriter` in `AuditLogger` to record every intake, allocation, and discharge event with timestamps into `triage_audit.log`.
 * **Module 4: Java Collections Framework**
-  * Utilizes `PriorityQueue<Patient>` to automatically order patients by urgency score (1 = Critical, 5 = Non-urgent).
+  * Utilizes `PriorityBlockingQueue<Patient>` to automatically order patients by urgency score (1 = Critical, 5 = Non-urgent).
   * Uses `HashMap<Integer, Bed>` for O(1) memory lookup of bed statuses.
 * **Module 5: Concurrency & JDBC Database Persistence**
   * Simulates parallel registration desks using multi-threaded execution (`Runnable`, `ExecutorService`).
@@ -79,7 +78,7 @@ Before building and running the application, verify that your environment has Ja
 Clone the repository and resolve all project dependencies defined in `pom.xml`:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/hospital-triage-system.git
+git clone [https://github.com/YOUR_USERNAME/hospital-triage-system.git](https://github.com/YOUR_USERNAME/hospital-triage-system.git)
 cd hospital-triage-system
 mvn dependency:resolve
 mvn compile
@@ -90,14 +89,19 @@ This application is configured for **zero-setup embedded execution**:
 * **Database URL:** `jdbc:h2:./triage_db;DB_CLOSE_DELAY=-1`
 * **Storage Mode:** Local file-backed database (`triage_db.mv.db`) auto-created on first run.
 * **Database Driver:** `org.h2.Driver` (managed via Maven dependencies).
-* **Schema Initialization:** Tables (`beds`, `patients`) and baseline bed seeds are automatically executed by `DatabaseConfig.initializeDatabase()` at launch. No manual SQL script execution or database server installation is required.
+* **Schema Initialization:** Tables (`beds`, `patients`) and baseline bed seeds are automatically executed by `DatabaseConfig.initializeDatabase()` at launch. No manual SQL script execution or external database server installation is required.
 
-### 4. Execution
-Build the standalone executable JAR file and run it directly from your command terminal:
+### 4. Command-Line Execution
+Build the standalone executable JAR file and run it directly from your terminal shell (no GUI required):
 
 ```bash
 mvn clean package
 java -jar target/hospital-triage-system-1.0-SNAPSHOT.jar
+```
+
+Or run both in a single command:
+```bash
+mvn clean package && java -jar target/hospital-triage-system-1.0-SNAPSHOT.jar
 ```
 
 ---
@@ -125,32 +129,21 @@ CREATE TABLE IF NOT EXISTS patients (
 ## Sample CLI Execution Output
 
 ```text
-==================================================
-  HOSPITAL EMERGENCY TRIAGE & BED ALLOCATION SYSTEM  
-==================================================
-[INIT] Initializing H2 Embedded Database...
-[INIT] Database initialized successfully.
-[INIT] Seeded 4 beds (2 ICU, 2 General).
+=== Hospital Emergency Triage & Bed Allocation System ===
+[INIT] Seeded default beds into H2 database.
+[INIT] H2 Database initialized successfully.
+[TRIAGE] Registered: Aarav Sharma -> Condition: [CRITICAL (ICU Required)]
+[TRIAGE] Registered: Rohan Verma -> Condition: [LOW URGENCY]
+[TRIAGE] Registered: Ananya Iyer -> Condition: [CRITICAL (ICU Required)]
+[TRIAGE] Registered: Vikram Singh -> Condition: [SEVERE (ICU Preferred)]
+[TRIAGE] Registered: Deepa Rao -> Condition: [MODERATE]
 
---- SIMULATING CONCURRENT INTAKE DESKS ---
-[DESK-1] Registered: John Doe | Urgency: 1 (Critical)
-[DESK-2] Registered: Jane Smith | Urgency: 3 (Moderate)
-[DESK-1] Registered: Alex Brown | Urgency: 1 (Critical)
+--- Processing Bed Allocations ---
+[ALLOCATION] ICU Bed #101 assigned to Aarav Sharma (CRITICAL (ICU Required))
+[ALLOCATION] ICU Bed #102 assigned to Ananya Iyer (CRITICAL (ICU Required))
+[ALLOCATION] GENERAL Bed #201 assigned to Vikram Singh (SEVERE (ICU Preferred))
+[ALLOCATION] GENERAL Bed #202 assigned to Deepa Rao (MODERATE)
+[EXPERT LOG] No beds currently available for patient: Rohan Verma [LOW URGENCY]
 
---- PROCESSING TRIAGE QUEUE ---
-[TRIAGE] Processing highest priority: John Doe (Urgency: 1)
-[SUCCESS] Allocated Bed #101 (ICU) to John Doe.
-[AUDIT] Action logged to triage_audit.log.
-
-[TRIAGE] Processing highest priority: Alex Brown (Urgency: 1)
-[SUCCESS] Allocated Bed #102 (ICU) to Alex Brown.
-[AUDIT] Action logged to triage_audit.log.
-
-[TRIAGE] Processing highest priority: Jane Smith (Urgency: 3)
-[SUCCESS] Allocated Bed #201 (GENERAL) to Jane Smith.
-[AUDIT] Action logged to triage_audit.log.
-
-==================================================
-System execution finished cleanly.
-==================================================
+=== Triage processing sequence complete ===
 ```
