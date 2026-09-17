@@ -87,6 +87,33 @@ public class TriageService {
         return selectedBed;
     }
 
+    public void printDashboard() {
+        Map<Integer, Bed> beds = bedDAO.getAllBeds();
+        int totalIcu = 0, occupiedIcu = 0;
+        int totalGeneral = 0, occupiedGeneral = 0;
+
+        for (Bed bed : beds.values()) {
+            if ("ICU".equalsIgnoreCase(bed.getBedType())) {
+                totalIcu++;
+                if (bed.isOccupied()) occupiedIcu++;
+            } else {
+                totalGeneral++;
+                if (bed.isOccupied()) occupiedGeneral++;
+            }
+        }
+
+        double icuPct = totalIcu == 0 ? 0 : ((double) occupiedIcu / totalIcu) * 100;
+        double genPct = totalGeneral == 0 ? 0 : ((double) occupiedGeneral / totalGeneral) * 100;
+
+        System.out.println("\n+-------------------------------------------------+");
+        System.out.println("|      EMERGENCY ROOM OCCUPANCY DASHBOARD         |");
+        System.out.println("+-------------------------------------------------+");
+        System.out.printf("| ICU Beds     : %d/%d Occupied [%3.0f%% Capacity]     |\n", occupiedIcu, totalIcu, icuPct);
+        System.out.printf("| General Beds : %d/%d Occupied [%3.0f%% Capacity]     |\n", occupiedGeneral, totalGeneral, genPct);
+        System.out.printf("| Waiting Queue: %d Patient(s) Waiting             |\n", patientQueue.size());
+        System.out.println("+-------------------------------------------------+");
+    }
+
     public int getQueueSize() {
         return patientQueue.size();
     }
