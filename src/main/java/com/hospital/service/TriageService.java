@@ -20,10 +20,22 @@ public class TriageService {
         this.patientDAO = new PatientDAO();
     }
 
+    private String getConditionLabel(int urgency) {
+        switch (urgency) {
+            case 1: return "CRITICAL (ICU Required)";
+            case 2: return "SEVERE (ICU Preferred)";
+            case 3: return "MODERATE";
+            case 4: return "LOW URGENCY";
+            case 5: return "NON-URGENT";
+            default: return "UNKNOWN";
+        }
+    }
+
     public void registerPatient(Patient patient) {
         patientQueue.add(patient);
-        AuditLogger.log("Registered patient: " + patient.getName() + " (Urgency: " + patient.getUrgencyScore() + ")");
-        System.out.println("[TRIAGE] Registered: " + patient.getName());
+        String label = getConditionLabel(patient.getUrgencyScore());
+        AuditLogger.log("Registered patient: " + patient.getName() + " | Condition: " + label);
+        System.out.println("[TRIAGE] Registered: " + patient.getName() + " -> Condition: [" + label + "]");
     }
 
     public synchronized Bed allocateBedNextPatient() throws NoBedsAvailableException {
@@ -36,7 +48,6 @@ public class TriageService {
         Map<Integer, Bed> beds = bedDAO.getAllBeds();
         Bed selectedBed = null;
 
-        // Priority logic: High urgency (1-2) prefers ICU bed
         boolean needsICU = patient.getUrgencyScore() <= 2;
 
         if (needsICU) {
@@ -48,7 +59,6 @@ public class TriageService {
             }
         }
 
-        // If no ICU bed found or not required, assign any available bed
         if (selectedBed == null) {
             for (Bed bed : beds.values()) {
                 if (!bed.isOccupied()) {
@@ -59,8 +69,8 @@ public class TriageService {
         }
 
         if (selectedBed == null) {
-            // Patient stays out of queue so execution drains cleanly
-            throw new NoBedsAvailableException("No beds currently available for patient: " + patient.getName());
+            throw new NoBedsAvailableException("No beds currently available for patient: " + patient.getName() 
+                + " [" + getConditionLabel(patient.getUrgencyScore()) + "]");
         }
 
         selectedBed.setOccupied(true);
@@ -69,8 +79,10 @@ public class TriageService {
         patient.setBedId(selectedBed.getBedId());
         patientDAO.savePatient(patient);
 
-        AuditLogger.log("Allocated Bed #" + selectedBed.getBedId() + " to Patient " + patient.getName());
-        System.out.println("[ALLOCATION] Bed #" + selectedBed.getBedId() + " assigned to " + patient.getName());
+        String bedInfo = selectedBed.getBedType() + " Bed #" + selectedBed.getBedId();
+        AuditLogger.log("Allocated " + bedInfo + " to Patient " + patient.getName());
+        System.out.println("[ALLOCATION] " + bedInfo + " assigned to " + patient.getName() 
+            + " (" + getConditionLabel(patient.getUrgencyScore()) + ")");
 
         return selectedBed;
     }
